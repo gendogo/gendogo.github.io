@@ -6,13 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives: 2024 | Hexo</title>
+  <title>Deploy Bearmap project to a VPS | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/archives/2024/index.html">
+  <meta name="description" content="The following content outlines the process I followed to deploy the Bearmap  project to a VPS. The process can be broadly divided into the following steps: 1.Upload the JAR file to the &#x2F;root&amp;#x2F">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deploy Bearmap project to a VPS">
+<meta property="og:url" content="http://example.com/2024/01/14/Deploy-Bearmap-project-to-a-VPS/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="The following content outlines the process I followed to deploy the Bearmap  project to a VPS. The process can be broadly divided into the following steps: 1.Upload the JAR file to the &#x2F;root&amp;#x2F">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-01-14T11:06:05.000Z">
+<meta property="article:modified_time" content="2024-01-14T11:14:08.061Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -150,103 +154,179 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-Deploy-Bearmap-project-to-a-VPS" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      Deploy Bearmap project to a VPS
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2024" class="archive-year">2024</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2024/01/14/Deploy-Bearmap-project-to-a-VPS/" class="archive-article-date">
+
+        
+        <a href="/2024/01/14/Deploy-Bearmap-project-to-a-VPS/" class="archive-article-date">
   	<time datetime="2024-01-14T11:06:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-01-14</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2024/01/14/Deploy-Bearmap-project-to-a-VPS/">Deploy Bearmap project to a VPS</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>The following content outlines the process I followed to deploy the Bearmap  project to a VPS. The process can be broadly divided into the following steps:</p>
+<p>1.Upload the JAR file to the &#x2F;root&#x2F;Bearmap&#x2F; location on the VPS server (Ubuntu 22.04 x64).</p>
+<p>2.Install openjdk 21.0.1 and nginx&#x2F;1.18.0.</p>
+<p>​	Verify if Nginx has started: <code>systemctl status nginx</code></p>
+<p>3.Run the application in the background on the VPS server: <code>nohup java -jar proj2c.jar &amp;</code></p>
+<p>4.Configure domain name resolution: Purchase a new domain name from a third-party service provider 	  and use Cloudflare’s DNS service to resolve it to the IP address of my VPS server.</p>
+<p>5.Configure the firewall: Allow external access to certain ports.</p>
+<p>6.Configure reverse proxy: Use Nginx to forward requests from ports 80 or 443 to the port where my    resides, i.e., 4567.</p>
+<p>Next, I will detail steps 5 and 6 in the order of code execution:</p>
+<h2 id="Expose-ports"><a href="#Expose-ports" class="headerlink" title="Expose ports"></a>Expose ports</h2><p>Enable the firewall: <code>sudo ufw enable</code></p>
+<p>View the list of applications managed by ufw: <code>sudo ufw app list</code></p>
+<p>At this point, the application list is as follows:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Available applications:</span><br><span class="line"> Nginx Full  	Exposes 80 and 443</span><br><span class="line"> Nginx HTTP 	Exposes 80</span><br><span class="line"> Nginx HTTPS 	Exposes 443</span><br><span class="line"> OpenSSH		Remote server login</span><br></pre></td></tr></table></figure>
 
-        <div class="article-info info-on-right">
-          
-          
+<p>Then execute <code>sudo ufw allow &#39;Nginx Full&#39;</code> and <code>sudo ufw allow &#39;OpenSSH&#39;</code></p>
+<p>Verify if the domain name can access the VPS: <code>ping domain name</code></p>
+<p>Check the currently listening ports, port 4567 is not occupied: <code>sudo netstat -tuln</code></p>
+<h2 id="Configure-reverse-proxy"><a href="#Configure-reverse-proxy" class="headerlink" title="Configure reverse proxy"></a>Configure reverse proxy</h2><p>Modify the configuration file: &#x2F;etc&#x2F;nginx&#x2F;nginx.conf</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name your domain;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        proxy_pass http://localhost:4567;</span><br><span class="line">        proxy_set_header Host $host;</span><br><span class="line">        proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<p>Restart Nginx with <code>sudo systemctl restart nginx</code></p>
+<p>Navigate to &#x2F;root&#x2F;Bearmap</p>
+<p>Run in the background: <code>nohup java -jar xx.jar &amp;</code></p>
+<p>Enter the domain name in the browser to access the Bearmap application.</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://example.com/2024/01/14/Deploy-Bearmap-project-to-a-VPS/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2024/01/13/My-first-blog/" class="archive-article-date">
-  	<time datetime="2024-01-13T12:43:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-01-13</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2024/01/13/My-first-blog/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Linux</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2024/01/13/My-first-blog/">Linux</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2024/01/13/hello-world/" class="archive-article-date">
-  	<time datetime="2024-01-13T12:27:40.094Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-01-13</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2024/01/13/hello-world/">Hello World</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
+  
 
 
           </div>
@@ -269,8 +349,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
